@@ -1,0 +1,46 @@
+plugins {
+    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.terraformersmc.com/releases' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    implementation 'com.github.topchetoeu:jscript:v0.8.7-beta'
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+sourceSets {
+    main.java.srcDirs = [ "src/java" ]
+    main.resources.srcDirs = [ "src/assets" ]
+}
+
+processResources {
+    filesMatching("fabric.mod.json") {
+        expand (
+            version: project.project_version,
+            name: project.project_name
+        )
+    }
+}
+
+base.archivesName = project.project_name
+version = project.project_version
+group = project.project_group

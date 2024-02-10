@@ -1,0 +1,24 @@
+{
+    "schemaVersion": 1,
+    "id": "${name}",
+    "version": "${version}",
+    "name": "MC-Jscript",
+    "description": "A simple mod loader for Javascript mods.",
+    "authors": [ "TopcehtoEU" ],
+    "license": "MIT",
+    "icon": "${name}/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "client": [ "me.topchetoeu.mcscript.McScript" ],
+        "main": [ "me.topchetoeu.mcscript.McScript" ]
+    },
+    "mixins": [ "mcscript.mixins.json" ],
+    "depends": {
+        "fabricloader": ">=0.14.11",
+        "fabric-api": "*",
+        "minecraft": "~1.19.3",
+        "modmenu": "~1.19.3",
+        "java": ">=17"
+    },
+    "suggests": { }
+}
