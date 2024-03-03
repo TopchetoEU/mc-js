@@ -2,7 +2,7 @@ package me.topchetoeu.mcscript;
 
 import java.util.Map;
 
-import me.topchetoeu.jscript.core.engine.Context;
+import me.topchetoeu.jscript.core.Context;
 
 public interface EnvironmentFactory {
     Iterable<String> dependancies();
