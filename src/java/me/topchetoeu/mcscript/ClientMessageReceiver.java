@@ -11,11 +11,11 @@ public class ClientMessageReceiver implements MessageReceiver {
     public final MinecraftClient client = MinecraftClient.getInstance();
 
     @Override
-    public void sendError(String msg) {
+    public synchronized void sendError(String msg) {
         client.player.sendMessage(Text.literal("").append(msg).formatted(Formatting.RED));
     }
     @Override
-    public void sendInfo(String msg) {
+    public synchronized void sendInfo(String msg) {
         client.player.sendMessage(Text.of(msg));
     }
 }

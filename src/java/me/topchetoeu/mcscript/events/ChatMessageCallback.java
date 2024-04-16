@@ -9,9 +9,13 @@ public interface ChatMessageCallback {
         public boolean cancelled;
     }
 
-    void execute(ChatArgs args);
+    boolean execute(ChatArgs args);
 
     public static final Event<ChatMessageCallback> EVENT = EventFactory.createArrayBacked(ChatMessageCallback.class, arr -> args -> {
-        for (var el : arr) el.execute(args);
+        for (var el : arr) {
+            if (!el.execute(args)) return false;
+        }
+
+        return true;
     });
 }

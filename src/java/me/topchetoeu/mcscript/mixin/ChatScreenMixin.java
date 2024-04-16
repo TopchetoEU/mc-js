@@ -23,7 +23,7 @@ public abstract class ChatScreenMixin {
 
         if (!args.cancelled) {
             chatText = args.message;
-    
+
             if (chatText.startsWith("/")) {
                 client.player.networkHandler.sendChatCommand(chatText.substring(1));
             } else {

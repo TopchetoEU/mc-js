@@ -3,7 +3,10 @@
     "minVersion": "0.8",
     "package": "me.topchetoeu.mcscript.mixin",
     "compatibilityLevel": "JAVA_17",
-    "mixins": [],
+    "mixins": [
+        "BlockItemMixin",
+        "ScreenHandlerMixin"
+    ],
     "client": [
         "ChatScreenMixin",
         "MinecraftClientMixin",

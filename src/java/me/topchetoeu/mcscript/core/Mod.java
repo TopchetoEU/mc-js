@@ -1,8 +1,8 @@
 package me.topchetoeu.mcscript.core;
 
-import me.topchetoeu.jscript.core.Engine;
-import me.topchetoeu.jscript.core.Environment;
-import me.topchetoeu.jscript.core.EventLoop;
+import me.topchetoeu.jscript.runtime.Engine;
+import me.topchetoeu.jscript.runtime.Environment;
+import me.topchetoeu.jscript.runtime.EventLoop;
 import me.topchetoeu.jscript.utils.filesystem.RootFilesystem;
 
 public class Mod {

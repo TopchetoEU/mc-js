@@ -10,6 +10,7 @@ import net.minecraft.client.MinecraftClient;
 
 @Mixin(Keyboard.class)
 public class KeyboardMixin {
+
     @Inject(method = "onChar", at = @At("HEAD"))
     private void onChar(long window, int codePoint, int modifiers, CallbackInfo cbi) {
         var client = MinecraftClient.getInstance();
