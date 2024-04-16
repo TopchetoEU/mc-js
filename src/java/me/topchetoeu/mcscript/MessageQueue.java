@@ -88,15 +88,20 @@ public class MessageQueue {
     }
 
     public <T> T await(DataNotifier<T> notif) {
+        if (thread != Thread.currentThread()) {
+            runQueue();
+            System.out.println("Tried to await outside the queue's thread, ignoring...");
+            return null;
+        }
         if (awaiting) {
+            runQueue();
             System.out.println("Tried to double-await, ignoring...");
             return null;
         }
 
         synchronized (Thread.currentThread()) {
-            runQueue();
-
             while (true) {
+                runQueue();
                 try {
                     awaiting = true;
                     return (T)notif.await();

@@ -24,6 +24,7 @@ import me.topchetoeu.mcscript.MessageQueue;
 public class EventLib {
     private HashMap<FunctionValue, Extensions> handles = new HashMap<>();
     private HashMap<FunctionValue, Extensions> onceHandles = new HashMap<>();
+    private Thread thread;
 
     public void invoke(Object ...args) {
         List<Map.Entry<FunctionValue, Extensions>> arr;
@@ -40,7 +41,8 @@ public class EventLib {
             var func = handle.getKey();
 
             try {
-                MessageQueue.get().await(EventLoop.get(env).pushMsg(false, env, func, null, args));
+                var awaitable = EventLoop.get(env).pushMsg(false, env, func, null, args);
+                if (thread != null) MessageQueue.get(thread).await(awaitable);
             }
             catch (EngineException e) { Values.printError(e, "in event handler"); }
         }
@@ -76,5 +78,9 @@ public class EventLib {
         }), Context.clean(args.ctx));
 
         return promise;
+    }
+
+    public EventLib(Thread thread) {
+        this.thread = thread;
     }
 }

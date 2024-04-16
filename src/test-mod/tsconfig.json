@@ -1,0 +1,10 @@
+{
+    "include": [ "./**.ts", "src/main.ts", "libs/mc.d.ts", "libs/lib.d.ts" ],
+    "compilerOptions": {
+        "downlevelIteration": true,
+        "strict": true,
+        "lib": [ ],
+        "outDir": "dst",
+        "target": "ES5"
+    }
+}

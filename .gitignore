@@ -3,6 +3,8 @@
 !/src
 !/src/**/*
 
+/src/test-mod/dst
+
 !/doc
 !/doc/**/*
 

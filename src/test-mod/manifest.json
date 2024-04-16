@@ -1,0 +1,6 @@
+{
+    "name": "test",
+    "author": "TopchetoEU",
+    "version": "1.0.0",
+    "main": "dst/main.js"
+}

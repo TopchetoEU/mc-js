@@ -4,6 +4,7 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import com.mojang.brigadier.Command;
@@ -25,6 +26,7 @@ import me.topchetoeu.jscript.utils.interop.ExposeTarget;
 import me.topchetoeu.jscript.utils.interop.ExposeType;
 import me.topchetoeu.jscript.utils.interop.WrapperName;
 import me.topchetoeu.mcscript.MessageQueue;
+import me.topchetoeu.mcscript.core.Data;
 import me.topchetoeu.mcscript.events.PlayerBlockPlaceEvent;
 import me.topchetoeu.mcscript.events.ScreenHandlerEvents;
 import me.topchetoeu.mcscript.lib.utils.EventLib;
@@ -33,6 +35,8 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
@@ -41,7 +45,10 @@ import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
@@ -49,22 +56,44 @@ import net.minecraft.util.math.Vec3d;
 @SuppressWarnings("resource") // for crying outloud
 public class ServerLib {
     public static class EventCtx {
-        @ExposeField public final EventLib blockPlace = new EventLib();
-        @ExposeField public final EventLib blockBreak = new EventLib();
-        @ExposeField public final EventLib tickStart = new EventLib();
-        @ExposeField public final EventLib tickEnd = new EventLib();
-        @ExposeField public final EventLib playerJoin = new EventLib();
-        @ExposeField public final EventLib playerLeave = new EventLib();
-        @ExposeField public final EventLib playerChangeWorld = new EventLib();
-        @ExposeField public final EventLib entityDamage = new EventLib();
-        @ExposeField public final EventLib inventoryScreenClicked = new EventLib();
-        @ExposeField public final EventLib inventoryScreenClosed = new EventLib();
+        @ExposeField public final EventLib blockPlace;
+        @ExposeField public final EventLib blockBreak;
+
+        @ExposeField public final EventLib tickStart;
+        @ExposeField public final EventLib tickEnd;
+
+        @ExposeField public final EventLib playerJoin;
+        @ExposeField public final EventLib playerLeave;
+        @ExposeField public final EventLib playerChangeWorld;
+
+        @ExposeField public final EventLib entityDamage;
+        @ExposeField public final EventLib entityUse;
+
+        @ExposeField public final EventLib itemUse;
+
+        @ExposeField public final EventLib inventoryScreenClicked;
+        @ExposeField public final EventLib inventoryScreenClosed;
+
+        public EventCtx(Thread thread) {
+            blockPlace = new EventLib(thread);
+            blockBreak = new EventLib(thread);
+            tickStart = new EventLib(thread);
+            tickEnd = new EventLib(thread);
+            playerJoin = new EventLib(thread);
+            playerLeave = new EventLib(thread);
+            playerChangeWorld = new EventLib(thread);
+            entityDamage = new EventLib(thread);
+            entityUse = new EventLib(thread);
+            itemUse = new EventLib(thread);
+            inventoryScreenClicked = new EventLib(thread);
+            inventoryScreenClosed = new EventLib(thread);
+        }
     }
 
     private static final WeakHashMap<MinecraftServer, EventCtx> ctxs = new WeakHashMap<>();
 
     public static EventCtx events(MinecraftServer server) {
-        ctxs.putIfAbsent(server, new EventCtx());
+        ctxs.putIfAbsent(server, new EventCtx(server.getThread()));
         return ctxs.get(server);
     }
     public static MessageQueue queue(MinecraftServer server) {
@@ -123,6 +152,15 @@ public class ServerLib {
     @Expose(type = ExposeType.GETTER)
     public static EventLib __entityDamage(Arguments args) {
         return events(args.self(MinecraftServer.class)).entityDamage;
+    }
+    @Expose(type = ExposeType.GETTER)
+    public static EventLib __entityUse(Arguments args) {
+        return events(args.self(MinecraftServer.class)).entityUse;
+    }
+
+    @Expose(type = ExposeType.GETTER)
+    public static EventLib __itemUse(Arguments args) {
+        return events(args.self(MinecraftServer.class)).itemUse;
     }
 
     @Expose(type = ExposeType.GETTER)
@@ -206,6 +244,18 @@ public class ServerLib {
         var text = args.convert(0, String.class);
 
         server.sendMessage(Text.of(text));
+    }
+
+    @Expose public static Entity __getByUUID(Arguments args) {
+        var server = args.self(MinecraftServer.class);
+        var uuid = args.getString(0);
+
+        for (var world : server.getWorlds()) {
+            var entity = world.getEntity(UUID.fromString(uuid));
+            if (entity != null) return entity;
+        }
+
+        return null;
     }
 
     @Expose public static ObjectValue __cmd(Arguments args) {
@@ -305,15 +355,20 @@ public class ServerLib {
                 handler, player, slotIndex < 0 ? null : slotIndex, rawButton, actType
             );
         });
-        // .ALLOW_DAMAGE.register((entity, damageSource, damageAmount) -> {
-        //     var dmgSrc = new ObjectValue();
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (!events(player.getServer()).entityUse.invokeCancellable(
+                player, entity
+            )) return ActionResult.FAIL;
 
-        //     dmgSrc.defineProperty(null, "damager", damageSource.getAttacker());
-        //     dmgSrc.defineProperty(null, "location", LocationLib.of(damageSource.getPosition()));
-        //     dmgSrc.defineProperty(null, "type", damageSource.getType().msgId());
-
-        //     return events(entity.getServer()).entityDamage.invokeCancellable(entity, damageAmount, dmgSrc);
-        // });
+            else return ActionResult.PASS;
+        });
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            if (!events(player.getServer()).itemUse.invokeCancellable(
+                Data.toJS(null, Data.toNBT(player.getStackInHand(hand))),
+                player, hand == Hand.MAIN_HAND ? "main" : "off"
+            )) return TypedActionResult.fail(player.getStackInHand(hand));
+            else return TypedActionResult.pass(player.getStackInHand(hand));
+        });
     }
 
     @Expose(target = ExposeTarget.STATIC)

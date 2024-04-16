@@ -10,7 +10,6 @@ import me.topchetoeu.mcscript.lib.server.ServerLib;
 import me.topchetoeu.mcscript.lib.utils.LocationLib;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
@@ -50,7 +49,7 @@ public class EntityLib {
 
     @Expose(type = ExposeType.GETTER)
     public static String __uuid(Arguments args) {
-        return args.self(ServerPlayerEntity.class).getUuidAsString();
+        return args.self(Entity.class).getUuidAsString();
     }
 
     @Expose public static void __clearName(Arguments args) {

@@ -29,7 +29,7 @@ import net.minecraft.server.world.ServerWorld;
 
 public class MCInternals {
     @ExposeField(target = ExposeTarget.STATIC)
-    public static final EventLib __serverLoad = new EventLib();
+    public static final EventLib __serverLoad = new EventLib(null);
 
     static {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
