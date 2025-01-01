@@ -13,16 +13,15 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
           java-version: '17'
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Clone repository
-        uses: GuillaumeFalourd/clone-github-repo-action@main
-        with:
-          branch: 'master'
-          owner: 'TopchetoEU'
-          repository: 'java-jscript'
+        uses: actions/checkout@v2
       - name: Build
-        run: |
-          cd java-jscript; gradle build
+        run: ./gradlew build
+      - name: Capture build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Artifacts
+          path: build/libs/
